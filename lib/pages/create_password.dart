@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:texans_web/controllers/invitation_controller.dart';
 import 'package:texans_web/pages/decline_screen.dart';
 import 'package:texans_web/pages/success_screen.dart';
+import 'package:texans_web/theme/wp_snackbar.dart';
 import 'package:texans_web/widgets/wp_button.dart';
 
 class CreatePasswordPage extends StatefulWidget {
@@ -49,10 +50,7 @@ class _CreatePasswordPageState extends State<CreatePasswordPage> {
           _controller.isAcceptLoading.value ||
           _controller.isDeclineLoading.value;
 
-      return Stack(
-        children: [
-          /// ── Main Scaffold ──────────────────────────────────────
-          Scaffold(
+      return Scaffold(
             backgroundColor: Colors.white,
             body: Center(
               child: Container(
@@ -147,21 +145,7 @@ class _CreatePasswordPageState extends State<CreatePasswordPage> {
                 ),
               ),
             ),
-          ),
-
-          /// ── Full-screen Loading Overlay ────────────────────────
-          if (isAnyLoading)
-            Container(
-              color: Colors.black.withOpacity(0.35),
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 3,
-                ),
-              ),
-            ),
-        ],
-      );
+          );
     });
   }
 
@@ -190,8 +174,9 @@ class _CreatePasswordPageState extends State<CreatePasswordPage> {
     final confirm = _confirmPasswordController.text.trim();
 
     if (password.isEmpty) return _showError("Please enter a password");
-    if (password.length < 6)
+    if (password.length < 6) {
       return _showError("Password must be at least 6 characters");
+    }
     if (confirm.isEmpty) return _showError("Please confirm your password");
     if (password != confirm) return _showError("Passwords do not match");
 
@@ -242,12 +227,6 @@ class _CreatePasswordPageState extends State<CreatePasswordPage> {
   }
 
   void _showError(String message) {
-    Get.snackbar(
-      'Error',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red[100],
-      colorText: Colors.red[900],
-    );
+    WpSnackbar.error('Error', message);
   }
 }

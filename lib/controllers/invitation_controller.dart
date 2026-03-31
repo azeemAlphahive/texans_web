@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:get/get.dart';
-import 'package:flutter/material.dart';
 import 'package:texans_web/api/wp_api.dart';
+import 'package:texans_web/theme/wp_snackbar.dart';
 
 class InvitationController extends GetxController {
   final RxString email = ''.obs;
@@ -37,13 +37,8 @@ class InvitationController extends GetxController {
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        Get.snackbar(
-          'Success',
-          'Account created successfully!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green[100],
-          colorText: Colors.green[900],
-        );
+        final msg = _messageFromBody(response.body) ?? 'Account created successfully!';
+        WpSnackbar.success('Success', msg);
         return true;
       } else {
         _showErrorFromResponse(
@@ -67,13 +62,8 @@ class InvitationController extends GetxController {
       final response = await WpApi.declineInvitation(email: email.value);
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        Get.snackbar(
-          'Declined',
-          'You have declined the invitation.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange[100],
-          colorText: Colors.orange[900],
-        );
+        final msg = _messageFromBody(response.body) ?? 'You have declined the invitation.';
+        WpSnackbar.success('Success', msg);
         return true;
       } else {
         _showErrorFromResponse(
@@ -93,29 +83,58 @@ class InvitationController extends GetxController {
   // ── Private helpers ──────────────────────────────────────────────
 
   void _showErrorFromResponse(String body, {required String fallback}) {
-    String message = fallback;
-    try {
-      final parsed = jsonDecode(body);
-      message = parsed['message'] ?? parsed['error'] ?? fallback;
-    } catch (_) {
-      message = body.isNotEmpty ? body : fallback;
-    }
-    Get.snackbar(
-      'Error',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red[100],
-      colorText: Colors.red[900],
-    );
+    final message = _messageFromBody(body) ?? (body.trim().isNotEmpty ? body.trim() : fallback);
+    WpSnackbar.error('Error', message);
   }
 
   void _showNetworkError() {
-    Get.snackbar(
-      'Error',
-      'Network error. Please try again.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red[100],
-      colorText: Colors.red[900],
-    );
+    WpSnackbar.error('Error', 'Network error. Please try again.');
   }
+}
+
+/// Parses common API JSON shapes for a human-readable message.
+String? _messageFromBody(String body) {
+  if (body.trim().isEmpty) return null;
+  try {
+    final parsed = jsonDecode(body);
+    return _messageFromJson(parsed);
+  } catch (_) {
+    return null;
+  }
+}
+
+String? _messageFromJson(dynamic parsed) {
+  if (parsed is! Map) return null;
+  final map = Map<String, dynamic>.from(parsed);
+
+  final message = map['message'];
+  if (message is String && message.trim().isNotEmpty) return message.trim();
+
+  final error = map['error'];
+  if (error is String && error.trim().isNotEmpty) return error.trim();
+  if (error is List && error.isNotEmpty) {
+    final first = error.first;
+    if (first is String) return first;
+    return first?.toString();
+  }
+
+  final errors = map['errors'];
+  if (errors is Map) {
+    for (final v in errors.values) {
+      if (v is List && v.isNotEmpty) {
+        final first = v.first;
+        if (first is String) return first;
+        return first?.toString();
+      }
+      if (v is String && v.isNotEmpty) return v;
+    }
+  }
+
+  final data = map['data'];
+  if (data is Map) {
+    final dm = data['message'];
+    if (dm is String && dm.trim().isNotEmpty) return dm.trim();
+  }
+
+  return null;
 }
