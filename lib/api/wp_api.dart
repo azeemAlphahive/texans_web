@@ -6,7 +6,7 @@ class WpApi {
   WpApi._();
 
   static Uri _uri(String path, [Map<String, String>? query]) {
-    final base = "'https://texans-baseball-backend-production.up.railway.app'";
+    final base = "https://texans-baseball-backend.up.railway.app";
     return Uri.parse('$base$path').replace(queryParameters: query);
   }
 

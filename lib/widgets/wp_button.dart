@@ -64,10 +64,12 @@ class WpButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: bg,
           foregroundColor: fg,
-          disabledBackgroundColor: _variant == _WpButtonVariant.primary
-              ? WpColors.black
-              : Colors.white,
-          disabledForegroundColor: fg.withOpacity(0.6),
+          disabledBackgroundColor: isLoading
+              ? bg
+              : (_variant == _WpButtonVariant.primary
+                  ? WpColors.black
+                  : Colors.white),
+          disabledForegroundColor: isLoading ? fg : fg.withOpacity(0.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(effectiveRadius),
             side: BorderSide(color: border),
@@ -76,10 +78,10 @@ class WpButton extends StatelessWidget {
         ),
         child: isLoading
             ? SizedBox(
-                width: 18,
-                height: 18,
+                width: 22,
+                height: 22,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2,
+                  strokeWidth: 2.5,
                   valueColor: AlwaysStoppedAnimation<Color>(fg),
                 ),
               )

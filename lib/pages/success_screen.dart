@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:html' as html;
+import 'package:url_launcher/url_launcher.dart';
 
 class InvitationSuccessPage extends StatelessWidget {
   const InvitationSuccessPage({super.key});
@@ -9,6 +9,15 @@ class InvitationSuccessPage extends StatelessWidget {
 
   static const String _playStoreUrl =
       'https://play.google.com/store/apps/details?id=your.package.name'; // 🔁 Replace
+
+  static Future<void> _openStoreUrl(String url) async {
+    final uri = Uri.parse(url);
+    await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+      webOnlyWindowName: '_blank',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +85,7 @@ class InvitationSuccessPage extends StatelessWidget {
               _storeButton(
                 label: 'Download on the App Store',
                 icon: Icons.apple,
-                onTap: () => html.window.open(_appStoreUrl, '_blank'),
+                onTap: () => _openStoreUrl(_appStoreUrl),
               ),
 
               const SizedBox(height: 12),
@@ -85,7 +94,7 @@ class InvitationSuccessPage extends StatelessWidget {
               _storeButton(
                 label: 'Get it on Google Play',
                 icon: Icons.android,
-                onTap: () => html.window.open(_playStoreUrl, '_blank'),
+                onTap: () => _openStoreUrl(_playStoreUrl),
               ),
             ],
           ),
