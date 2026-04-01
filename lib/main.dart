@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:texans_web/pages/create_password.dart';
+import 'package:texans_web/routes/app_routes.dart';
 import 'package:texans_web/theme/wp_theme.dart';
 
 Future<void> main() async {
@@ -23,7 +23,8 @@ class WebPanelApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: 'Admin Panel',
           theme: WpTheme.light(),
-          home: const CreatePasswordPage(),
+          initialRoute: '/',
+          getPages: AppPages.pages,
         );
       },
     );

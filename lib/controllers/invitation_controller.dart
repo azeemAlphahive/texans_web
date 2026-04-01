@@ -37,7 +37,8 @@ class InvitationController extends GetxController {
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        final msg = _messageFromBody(response.body) ?? 'Account created successfully!';
+        final msg =
+            _messageFromBody(response.body) ?? 'Account created successfully!';
         WpSnackbar.success('Success', msg);
         return true;
       } else {
@@ -62,7 +63,36 @@ class InvitationController extends GetxController {
       final response = await WpApi.declineInvitation(email: email.value);
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        final msg = _messageFromBody(response.body) ?? 'You have declined the invitation.';
+        final msg =
+            _messageFromBody(response.body) ??
+            'You have declined the invitation.';
+        WpSnackbar.success('Success', msg);
+        return true;
+      } else {
+        _showErrorFromResponse(
+          response.body,
+          fallback: 'Failed to decline invitation',
+        );
+        return false;
+      }
+    } catch (_) {
+      _showNetworkError();
+      return false;
+    } finally {
+      isDeclineLoading.value = false;
+    }
+  }
+
+  /// ❌ Decline parent invitation
+  Future<bool> declineParentInvitation() async {
+    isDeclineLoading.value = true;
+    try {
+      final response = await WpApi.parentDeclineInvitation(email: email.value);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final msg =
+            _messageFromBody(response.body) ??
+            'You have declined the invitation.';
         WpSnackbar.success('Success', msg);
         return true;
       } else {
@@ -83,7 +113,9 @@ class InvitationController extends GetxController {
   // ── Private helpers ──────────────────────────────────────────────
 
   void _showErrorFromResponse(String body, {required String fallback}) {
-    final message = _messageFromBody(body) ?? (body.trim().isNotEmpty ? body.trim() : fallback);
+    final message =
+        _messageFromBody(body) ??
+        (body.trim().isNotEmpty ? body.trim() : fallback);
     WpSnackbar.error('Error', message);
   }
 

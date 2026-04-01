@@ -10,7 +10,7 @@ class WpApi {
     return Uri.parse('$base$path').replace(queryParameters: query);
   }
 
-  /// Accept invitation with password in body
+  /// Accept coach invitation with password in body
   static Future<http.Response> acceptInvitation({
     required String email,
     required String otp,
@@ -18,14 +18,12 @@ class WpApi {
     required String password,
     required String confirmPassword,
   }) {
-    // Query parameters
     final query = <String, String>{
       'email': email,
       'otp': otp,
       'action': action,
     };
 
-    // Body parameters
     final body = {'password': password, 'confirm_password': confirmPassword};
 
     return http.post(
@@ -38,10 +36,60 @@ class WpApi {
     );
   }
 
-  /// Decline invitation - POST with email in body
+  static Future<http.Response> parentInvitationAccept({
+    required String invitationToken,
+  }) {
+    final query = <String, String>{'invitation_token': invitationToken};
+    return http.get(
+      _uri('/api/v1/parent/auth/invitation/accept', query),
+      headers: {'Accept': 'application/json'},
+    );
+  }
+
+  /// Set parent password after invitation
+  static Future<http.Response> parentsetPass({
+    required String email,
+    required String otp,
+    required String password,
+    required String confirmPassword,
+    required String action,
+  }) {
+    final query = <String, String>{
+      'email': email,
+      'otp': otp,
+      'action': action,
+    };
+
+    final body = {'password': password, 'confirm_password': confirmPassword};
+
+    return http.post(
+      _uri('/api/v1/parent/auth/reset-password', query),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+  }
+
+  /// Decline coach invitation
   static Future<http.Response> declineInvitation({required String email}) {
     return http.post(
       _uri('/api/v1/coach/auth/forgot-password'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({'email': email}),
+    );
+  }
+
+  /// Decline parent invitation
+  static Future<http.Response> parentDeclineInvitation({
+    required String email,
+  }) {
+    return http.post(
+      _uri('/api/v1/parent/auth/forgot-password'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
