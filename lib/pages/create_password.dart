@@ -4,6 +4,7 @@ import 'package:texans_web/controllers/invitation_controller.dart';
 import 'package:texans_web/pages/decline_screen.dart';
 import 'package:texans_web/pages/success_screen.dart';
 import 'package:texans_web/theme/wp_snackbar.dart';
+import 'package:texans_web/utils/password_validation.dart';
 import 'package:texans_web/widgets/wp_button.dart';
 
 class CreatePasswordPage extends StatefulWidget {
@@ -27,11 +28,14 @@ class _CreatePasswordPageState extends State<CreatePasswordPage> {
   void initState() {
     super.initState();
     final uri = Uri.base;
+    final flow = uri.queryParameters['flow']?.toLowerCase() ?? '';
+    final isParent = flow == 'parent';
     _controller = Get.put(
       InvitationController(
         email: uri.queryParameters['email'] ?? '',
         otp: uri.queryParameters['otp'] ?? '',
         action: uri.queryParameters['action'] ?? 'set',
+        isParentFlow: isParent,
       ),
     );
   }
@@ -86,6 +90,20 @@ class _CreatePasswordPageState extends State<CreatePasswordPage> {
                         ),
                       ),
                       const SizedBox(height: 10),
+
+                      if (_controller.isParentFlow) ...[
+                        const Center(
+                          child: Text(
+                            'Parent account',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                      ],
 
                       /// Email
                       Center(
@@ -174,16 +192,21 @@ class _CreatePasswordPageState extends State<CreatePasswordPage> {
     final confirm = _confirmPasswordController.text.trim();
 
     if (password.isEmpty) return _showError("Please enter a password");
-    if (password.length < 6) {
-      return _showError("Password must be at least 6 characters");
-    }
     if (confirm.isEmpty) return _showError("Please confirm your password");
     if (password != confirm) return _showError("Passwords do not match");
 
-    final success = await _controller.acceptInvitation(
-      password: password,
-      confirmPassword: confirm,
-    );
+    final policy = passwordPolicyError(password);
+    if (policy != null) return _showError(policy);
+
+    final success = _controller.isParentFlow
+        ? await _controller.parentSetPassword(
+            password: password,
+            confirmPassword: confirm,
+          )
+        : await _controller.acceptInvitation(
+            password: password,
+            confirmPassword: confirm,
+          );
 
     if (success) {
       Get.off(() => const InvitationSuccessPage());
@@ -194,7 +217,9 @@ class _CreatePasswordPageState extends State<CreatePasswordPage> {
     final confirmed = await _showDeclineConfirmDialog();
     if (!confirmed) return;
 
-    final success = await _controller.declineInvitation();
+    final success = _controller.isParentFlow
+        ? await _controller.declineParentInvitation()
+        : await _controller.declineInvitation();
     if (success) {
       Get.off(() => const InvitationDeclinePage());
     }
