@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:texans_web/pages/create_password.dart';
 import 'package:texans_web/pages/decline_screen.dart';
@@ -42,8 +41,7 @@ class AppPages {
     ),
     GetPage(
       name: AppRoutes.root,
-      page: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      page: () => const CreatePasswordPage(),
     ),
   ];
 }
