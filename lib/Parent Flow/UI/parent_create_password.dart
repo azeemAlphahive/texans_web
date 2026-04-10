@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:texans_web/api/wp_api.dart';
 import 'package:texans_web/routes/app_routes.dart';
 import 'package:texans_web/theme/wp_snackbar.dart';
+import 'package:texans_web/utils/api_response_message.dart';
+import 'package:texans_web/utils/password_validation.dart';
 import 'package:texans_web/widgets/wp_button.dart';
 
 class ParentCreatePasswordPage extends StatefulWidget {
@@ -32,7 +34,9 @@ class _ParentCreatePasswordPageState extends State<ParentCreatePasswordPage> {
     final uri = Uri.base;
     _email = uri.queryParameters['email'] ?? '';
     _otp = uri.queryParameters['otp'] ?? '';
-    _action = uri.queryParameters['action'] ?? '';
+    _action = uri.queryParameters['action']?.trim().isNotEmpty == true
+        ? uri.queryParameters['action']!
+        : 'set';
   }
 
   @override
@@ -62,8 +66,9 @@ class _ParentCreatePasswordPageState extends State<ParentCreatePasswordPage> {
       WpSnackbar.error('Error', 'Please enter password');
       return;
     }
-    if (password.length < 6) {
-      WpSnackbar.error('Error', 'Password must be at least 6 characters');
+    final policy = passwordPolicyError(password);
+    if (policy != null) {
+      WpSnackbar.error('Error', policy);
       return;
     }
     if (confirmPassword.isEmpty) {
@@ -87,10 +92,18 @@ class _ParentCreatePasswordPageState extends State<ParentCreatePasswordPage> {
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        WpSnackbar.success('Success', 'Account created successfully!');
+        final msg = messageFromApiBody(response.body) ??
+            'Account created successfully!';
+        WpSnackbar.success('Success', msg);
         Get.offAllNamed(AppRoutes.success);
       } else {
-        WpSnackbar.error('Error', response.body);
+        WpSnackbar.error(
+          'Error',
+          userFacingApiMessage(
+            response.body,
+            'Could not create your account. Please try again.',
+          ),
+        );
       }
     } catch (_) {
       WpSnackbar.error('Network Error', 'Unable to create account.');

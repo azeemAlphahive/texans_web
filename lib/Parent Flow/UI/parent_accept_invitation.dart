@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:texans_web/api/wp_api.dart';
 import 'package:texans_web/routes/app_routes.dart';
 import 'package:texans_web/theme/wp_snackbar.dart';
+import 'package:texans_web/utils/api_response_message.dart';
 import 'package:texans_web/widgets/wp_button.dart';
 
 class ParentAcceptInvitationPage extends StatefulWidget {
@@ -17,7 +18,8 @@ class _ParentAcceptInvitationPageState
     extends State<ParentAcceptInvitationPage> {
   late final String _invitationToken;
   late final String _email;
-  bool _isLoading = false;
+  bool _acceptLoading = false;
+  bool _declineLoading = false;
 
   @override
   void initState() {
@@ -36,18 +38,24 @@ class _ParentAcceptInvitationPageState
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() => _acceptLoading = true);
     try {
       final response = await WpApi.parentInvitationAccept(
         invitationToken: _invitationToken,
       );
       if (response.statusCode >= 200 && response.statusCode < 300) {
+        final detail = messageFromApiBody(response.body);
         WpSnackbar.success(
           'Invitation accepted',
-          'Check your email to set up your account password.',
+          detail ??
+              'Check your email to set up your account password.',
         );
       } else {
-        WpSnackbar.error('Failed', response.body);
+        final msg = userFacingApiMessage(
+          response.body,
+          'We couldn’t accept this invitation. Please try again.',
+        );
+        WpSnackbar.error('Unable to accept invitation', msg);
       }
     } catch (e) {
       WpSnackbar.error(
@@ -55,7 +63,7 @@ class _ParentAcceptInvitationPageState
         'Unable to process invitation. Please try again.',
       );
     } finally {
-      setState(() => _isLoading = false);
+      setState(() => _acceptLoading = false);
     }
   }
 
@@ -68,24 +76,29 @@ class _ParentAcceptInvitationPageState
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() => _declineLoading = true);
     try {
       final response = await WpApi.parentDeclineInvitation(email: _email);
       if (response.statusCode >= 200 && response.statusCode < 300) {
         WpSnackbar.success('Declined', 'Invitation declined successfully.');
         Get.offNamed(AppRoutes.decline);
       } else {
-        WpSnackbar.error('Failed', response.body);
+        final msg = userFacingApiMessage(
+          response.body,
+          'We couldn’t process your decline request. Please try again.',
+        );
+        WpSnackbar.error('Unable to decline invitation', msg);
       }
     } catch (_) {
       WpSnackbar.error('Network Error', 'Unable to decline invitation.');
     } finally {
-      setState(() => _isLoading = false);
+      setState(() => _declineLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final busy = _acceptLoading || _declineLoading;
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -141,8 +154,8 @@ class _ParentAcceptInvitationPageState
                 /// ✅ Accept Button
                 WpButton.primary(
                   label: 'Accept & setup account',
-                  isLoading: _isLoading,
-                  onPressed: _isLoading ? null : _acceptInvitation,
+                  isLoading: _acceptLoading,
+                  onPressed: busy ? null : _acceptInvitation,
                 ),
 
                 const SizedBox(height: 12),
@@ -150,8 +163,8 @@ class _ParentAcceptInvitationPageState
                 /// ❌ Decline Button
                 WpButton.secondary(
                   label: 'Decline',
-                  isLoading: _isLoading,
-                  onPressed: _isLoading ? null : _declineInvitation,
+                  isLoading: _declineLoading,
+                  onPressed: busy ? null : _declineInvitation,
                 ),
               ],
             ),
