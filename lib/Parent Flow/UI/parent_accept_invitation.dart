@@ -44,11 +44,11 @@ class _ParentAcceptInvitationPageState
         invitationToken: _invitationToken,
       );
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        final detail = messageFromApiBody(response.body);
+        // final detail = messageFromApiBody(response.body);
         WpSnackbar.success(
           'Invitation accepted',
-          detail ??
-              'Check your email to set up your account password.',
+           'Your invitation has been accepted. Please check your email to set up your account password.',
+            
         );
       } else {
         final msg = userFacingApiMessage(
