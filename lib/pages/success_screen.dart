@@ -5,7 +5,7 @@ class InvitationSuccessPage extends StatelessWidget {
   const InvitationSuccessPage({super.key});
 
   static const String _appStoreUrl =
-      'https://apps.apple.com/app/your-app-id'; // 🔁 Replace
+      'https://apps.apple.com/pk/app/diamondlink-management/id6757766382'; // 🔁 Replace
 
   static const String _playStoreUrl =
       'https://play.google.com/store/apps/details?id=your.package.name'; // 🔁 Replace
