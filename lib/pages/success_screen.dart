@@ -8,7 +8,7 @@ class InvitationSuccessPage extends StatelessWidget {
       'https://apps.apple.com/pk/app/diamondlink-management/id6757766382'; // 🔁 Replace
 
   static const String _playStoreUrl =
-      'https://play.google.com/store/apps/details?id=your.package.name'; // 🔁 Replace
+      'https://play.google.com/store/apps/details?id=com.diamondlinkmanager.onesourcewebdevelopment'; // 🔁 Replace
 
   static Future<void> _openStoreUrl(String url) async {
     final uri = Uri.parse(url);
